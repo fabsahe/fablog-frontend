@@ -1,7 +1,8 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useFormik } from 'formik'
 import * as yup from 'yup'
+import Alert from '@mui/material/Alert'
 import Avatar from '@mui/material/Avatar'
 import Button from '@mui/material/Button'
 import CssBaseline from '@mui/material/CssBaseline'
@@ -40,6 +41,8 @@ function Copyright(props) {
 }
 
 export default function SignIn() {
+  const [errorMessage, setErrorMessage] = useState('')
+
   const { login } = useAuth()
 
   const navigate = useNavigate()
@@ -56,7 +59,7 @@ export default function SignIn() {
         navigate('/dashboard')
       } catch (error) {
         console.log(error)
-        // setErrorMessage('Credenciales no válidas')
+        setErrorMessage('Credenciales no válidas')
       }
     }
   })
@@ -72,6 +75,11 @@ export default function SignIn() {
           alignItems: 'center'
         }}
       >
+        {errorMessage && (
+          <Alert severity="error">
+            El correo o la contraseña son incorrectos
+          </Alert>
+        )}
         <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
           <LockOutlinedIcon />
         </Avatar>
