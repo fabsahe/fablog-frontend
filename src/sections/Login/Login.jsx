@@ -4,13 +4,14 @@ import { useFormik } from 'formik'
 import * as yup from 'yup'
 import Alert from '@mui/material/Alert'
 import Avatar from '@mui/material/Avatar'
-import Button from '@mui/material/Button'
+import LoadingButton from '@mui/lab/LoadingButton'
 import CssBaseline from '@mui/material/CssBaseline'
 import TextField from '@mui/material/TextField'
 import FormControlLabel from '@mui/material/FormControlLabel'
 import Checkbox from '@mui/material/Checkbox'
 import Box from '@mui/material/Box'
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined'
+import LoginIcon from '@mui/icons-material/Login'
 import Typography from '@mui/material/Typography'
 import Container from '@mui/material/Container'
 import { useAuth } from '../../context/AuthContext'
@@ -41,7 +42,9 @@ function Copyright(props) {
 }
 
 export default function SignIn() {
+  const [loading, setLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
+  const [checked, setChecked] = useState(true)
 
   const { login } = useAuth()
 
@@ -55,7 +58,9 @@ export default function SignIn() {
     validationSchema,
     onSubmit: async (values) => {
       try {
+        setLoading(true)
         await login(values)
+        setLoading(false)
         navigate('/dashboard')
       } catch (error) {
         console.log(error)
@@ -63,6 +68,17 @@ export default function SignIn() {
       }
     }
   })
+
+  const handleReminder = (event) => {
+    setChecked(event.target.checked)
+    if (event.target.checked) {
+      formik.values.email = 'admin@fablog.test'
+      formik.values.password = 'secreto'
+    } else {
+      formik.values.email = ''
+      formik.values.password = ''
+    }
+  }
 
   return (
     <Container component="main" maxWidth="xs">
@@ -116,17 +132,22 @@ export default function SignIn() {
             helperText={formik.touched.password && formik.errors.password}
           />
           <FormControlLabel
+            checked={checked}
             control={<Checkbox value="remember" color="primary" />}
             label="Recordarme"
+            onClick={handleReminder}
           />
-          <Button
+          <LoadingButton
+            loading={loading}
+            loadingPosition="start"
+            startIcon={<LoginIcon />}
             type="submit"
             fullWidth
             variant="contained"
             sx={{ mt: 3, mb: 2 }}
           >
             Ingresar
-          </Button>
+          </LoadingButton>
         </Box>
       </Box>
       <Copyright sx={{ mt: 8, mb: 4 }} />
