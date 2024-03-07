@@ -1,4 +1,7 @@
 import React from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useFormik } from 'formik'
+import * as yup from 'yup'
 import Avatar from '@mui/material/Avatar'
 import Button from '@mui/material/Button'
 import CssBaseline from '@mui/material/CssBaseline'
@@ -9,6 +12,18 @@ import Box from '@mui/material/Box'
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined'
 import Typography from '@mui/material/Typography'
 import Container from '@mui/material/Container'
+import { useAuth } from '../../context/AuthContext'
+
+const validationSchema = yup.object({
+  email: yup
+    .string('Ingresar correo electrónico')
+    .email('El correo electrónico no es válido')
+    .required('El correo electrónico es requerido'),
+  password: yup
+    .string('Ingresar contraseña')
+    .min(7, 'La contraseña debe tener al menos 7 caracteres')
+    .required('La contraseña es requerida')
+})
 
 function Copyright(props) {
   return (
@@ -25,14 +40,26 @@ function Copyright(props) {
 }
 
 export default function SignIn() {
-  const handleSubmit = (event) => {
-    event.preventDefault()
-    const data = new FormData(event.currentTarget)
-    console.log({
-      email: data.get('email'),
-      password: data.get('password')
-    })
-  }
+  const { login } = useAuth()
+
+  const navigate = useNavigate()
+
+  const formik = useFormik({
+    initialValues: {
+      email: 'admin@fablog.test',
+      password: 'secreto'
+    },
+    validationSchema,
+    onSubmit: async (values) => {
+      try {
+        await login(values)
+        navigate('/dashboard')
+      } catch (error) {
+        console.log(error)
+        // setErrorMessage('Credenciales no válidas')
+      }
+    }
+  })
 
   return (
     <Container component="main" maxWidth="xs">
@@ -51,26 +78,34 @@ export default function SignIn() {
         <Typography component="h1" variant="h5">
           Ingresar
         </Typography>
-        <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
+        <Box component="form" onSubmit={formik.handleSubmit} sx={{ mt: 1 }}>
           <TextField
             margin="normal"
-            required
             fullWidth
             id="email"
             label="Correo electrónico"
             name="email"
             autoComplete="off"
             autoFocus
+            value={formik.values.email}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            error={formik.touched.email && Boolean(formik.errors.email)}
+            helperText={formik.touched.email && formik.errors.email}
           />
           <TextField
             margin="normal"
-            required
             fullWidth
             name="password"
             label="Contraseña"
             type="password"
             id="password"
             autoComplete="off"
+            value={formik.values.password}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            error={formik.touched.password && Boolean(formik.errors.password)}
+            helperText={formik.touched.password && formik.errors.password}
           />
           <FormControlLabel
             control={<Checkbox value="remember" color="primary" />}
